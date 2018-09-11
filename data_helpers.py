@@ -1,8 +1,17 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+'''
+Created on 2018年6月1日
+
+@author: ruicao
+'''
+
 import numpy as np
 import re
+import jieba
 import itertools
 from collections import Counter
-
+import utils
 
 def clean_str(string):
     """
@@ -44,6 +53,42 @@ def load_data_and_labels(positive_data_file, negative_data_file):
     y = np.concatenate([positive_labels, negative_labels], 0)
     return [x_text, y]
 
+def load_data_and_labels_app( data_file ):
+    """
+    Loads MR polarity data from files, splits the data into words and generates labels.
+    Returns split sentences and labels.
+    """
+    catMap = {
+        "健康":[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        "军事":[0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        "动漫":[0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        "影视":[0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        "房产":[0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        "教育":[0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        "旅游":[0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        "汽车":[0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+        "游戏":[0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
+        "美食":[0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+        "读书":[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+        "财经":[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+        "购物":[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+        "运动":[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
+        "音乐":[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
+        "其他":[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
+    }
+    
+    # Load data from files
+    records = list(open(data_file, "r", encoding="utf-8").readlines())
+    records = list( filter( lambda r:r[4] == "1" or r[4] == "2", [ s.strip().split("\t") for s in records ]) )
+    x = [ " ".join( utils.trimSegList(  jieba.cut( s[2] ), utils.stopWords) ) for s in records ]
+    y = [ catMap[s[3]] for s in records ]
+#     for s in records[:100]:
+#         print( "cat %s"%s[3] )
+#         print( "label:" )
+#         print( catMap[s[3]] )
+    return [ x, y ]
+    
+    
 
 def batch_iter(data, batch_size, num_epochs, shuffle=True):
     """
